@@ -1,0 +1,12 @@
+.env
+.env.*
+.git
+.gitignore
+.venv
+venv
+__pycache__
+*.py[cod]
+*.log
+bot/memory.json
+.vscode
+.idea

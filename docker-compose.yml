@@ -1,0 +1,16 @@
+version: "3.8"
+
+services:
+  opensmart:
+    build: .
+    container_name: opensmart_bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - opensmart_data:/app/data
+    environment:
+      - OPENSMART_MEMORY_PATH=/app/data/memory.json
+
+volumes:
+  opensmart_data:
