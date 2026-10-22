@@ -14,3 +14,4 @@ COPY . .
 
 # Launch OPENSMART Telegram bot
 CMD ["python", "-m", "bot.main"]
+
