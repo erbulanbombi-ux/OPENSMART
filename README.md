@@ -6,11 +6,11 @@
 
 <p align="center">
   <strong>The fastest, smartest, and most resource-efficient open-source Telegram AI assistant.</strong><br/>
-  Powered by OpenRouter & OpenAI · Runs 24/7 on a 512 MB VPS for $2/mo · Long-term Goal Planning · Smart Notes · Daily Briefings · Deep Focus
+  Powered by Nebius AI Studio · Runs 24/7 on a 512 MB VPS for $2/mo · Long-term Goal Planning · Smart Notes · Daily Briefings · Deep Focus
 </p>
 
 <p align="center">
-  <a href="https://openrouter.ai"><img src="https://img.shields.io/badge/Powered%20by-OpenRouter%20AI-6366F1.svg?style=flat-square" alt="OpenRouter AI" /></a>
+  <a href="https://nebius.com"><img src="https://img.shields.io/badge/Powered%20by-Nebius%20AI%20Studio-0066FF.svg?style=flat-square&logo=nebius&logoColor=white" alt="Nebius AI Studio" /></a>
   <a href="https://github.com/erbulanbombi-ux/OPENSMART"><img src="https://img.shields.io/badge/status-production--ready-brightgreen?style=flat-square" alt="Status" /></a>
   <a href="https://python.org"><img src="https://img.shields.io/badge/python-3.11+-3776AB.svg?style=flat-square&logo=python&logoColor=white" alt="Python Version" /></a>
   <a href="https://core.telegram.org/bots"><img src="https://img.shields.io/badge/Telegram-aiogram%203.x-2CA5E0?style=flat-square&logo=telegram&logoColor=white" alt="Telegram Bot" /></a>
@@ -33,7 +33,7 @@
 
 > [!NOTE]
 > 🚀 **Built for 24/7 Production Deployment.**
-> OPENSMART is an autonomous personal AI companion powered by **OpenRouter & OpenAI** (`openai/gpt-4o-mini`). It solves the real-life productivity bottleneck: breaking down ambitious long-term goals into verifiable milestones, capturing spontaneous ideas without friction, and keeping you accountable daily — all while consuming less than 80 MB RAM.
+> OPENSMART is an autonomous personal AI companion powered by **Nebius AI Studio** (`meta-llama/Meta-Llama-3.1-70B-Instruct`). It solves the real-life productivity bottleneck: breaking down ambitious long-term goals into verifiable milestones, capturing spontaneous ideas without friction, and keeping you accountable daily — all while consuming less than 80 MB RAM.
 
 ---
 
@@ -50,7 +50,7 @@ cd OPENSMART
 
 # 2. Configure your environment
 cp .env.example .env
-nano .env  # Add your BOT_TOKEN and OPENROUTER_API_KEY
+nano .env  # Add your BOT_TOKEN and NEBIUS_API_KEY
 
 # 3. Start the container in background
 docker compose up -d --build
@@ -80,7 +80,7 @@ pip install -r requirements.txt
 
 # 4. Configure .env
 cp .env.example .env
-# Edit BOT_TOKEN and OPENROUTER_API_KEY in .env
+# Edit BOT_TOKEN and NEBIUS_API_KEY in .env
 
 # 5. Launch OPENSMART
 python3 -m bot.main
@@ -163,6 +163,7 @@ Start Pomodoro-style focus intervals (`/focus 25`). If you get sidetracked durin
 | **Data Safety** | Accidental overwrites | Lost upon session restart | Vendor lock-in | **Guarded `YES` confirmation** |
 | **Proactive Check-ins** | None | None | Push notification spam | **Context-aware cron schedule** |
 | **Interface** | Bot menus / WebUI | Terminal only | Mobile / Desktop app | **Everywhere in Telegram** |
+| **AI Infrastructure** | Varies / OpenAI | Expensive GPUs | None | 🚀 **Nebius AI Studio** |
 
 ---
 
@@ -206,7 +207,7 @@ flowchart TD
         Router -->|"Direct Triggers"| FastForget["🗑 Guarded Forget Engine"]
         Router -->|"Conversational"| Agent["🤖 Agent Controller"]
         
-        Agent <-->|"Async Chat Completions"| Provider["🌐 OpenRouter / OpenAI API\n(openai/gpt-4o-mini)"]
+        Agent <-->|"Async Chat Completions"| Provider["🌐 Nebius AI Studio\n(meta-llama/Meta-Llama-3.1-70B-Instruct)"]
         Agent <-->|"Function Calling"| ToolRegistry["🛠 Tool Registry"]
         
         subgraph Tools ["Built-in Tools"]
@@ -236,8 +237,7 @@ flowchart TD
 | Variable | Required | Default | Description |
 |---|:---:|---|---|
 | `BOT_TOKEN` | **Yes** | — | Telegram Bot API token from [@BotFather](https://t.me/BotFather) |
-| `OPENROUTER_API_KEY` | **Yes** | — | OpenRouter API key from [OpenRouter](https://openrouter.ai) |
-| `OPENAI_API_KEY` | Optional | — | Direct OpenAI API key from [OpenAI](https://platform.openai.com) |
+| `NEBIUS_API_KEY` | **Yes** | — | Nebius AI Studio API key from [Nebius](https://nebius.com) |
 | `CHECKIN_TIMEZONE` | No | `UTC` | IANA timezone (e.g. `UTC`, `America/New_York`, `Asia/Tokyo`) |
 | `CHECKIN_HOURS` | No | `9,14,20` | Comma-separated hours for proactive check-ins |
 | `OPENSMART_MEMORY_PATH` | No | `bot/memory.json` | Custom path to memory storage file |
