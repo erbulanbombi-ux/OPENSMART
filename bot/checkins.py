@@ -52,10 +52,10 @@ class ProactiveCheckins:
         for chat_id, goals in await list_active_goal_chats():
             goal_lines = "\n".join(f"• {goal['title']}" for goal in goals)
             text = (
-                "🎯 Чек-ин OPENSMART: как продвигаются твои цели?\n\n"
+                "🎯 OPENSMART Check-in: How are your active goals progressing?\n\n"
                 f"{goal_lines}\n\n"
-                "Расскажи, что удалось сделать или сколько времени уделил. "
-                "Я зафиксирую прогресс и подскажу следующий шаг!"
+                "Let me know what you've accomplished or how much time you spent today. "
+                "I will update your progress and suggest the next best step!"
             )
             try:
                 await self._bot.send_message(chat_id, sanitize_latex(text))
@@ -64,30 +64,30 @@ class ProactiveCheckins:
 
     async def _send_daily_briefings(self) -> None:
         for chat_id, briefing in await list_daily_briefing_chats():
-            sections = ["☀️ Доброе утро! OPENSMART Daily"]
+            sections = ["☀️ Good morning! OPENSMART Daily Briefing"]
             if briefing.get("first_action"):
-                sections.append(f"🔥 Что лучше сделать первым:\n{briefing['first_action']}")
+                sections.append(f"🔥 Recommended First Priority:\n{briefing['first_action']}")
             if briefing.get("reminders"):
-                sections.append("⏰ Напоминания и дедлайны:\n" + "\n".join(
-                    f"• {item['text']}" + (f" (до {item['due_at']})" if item.get("due_at") else "")
+                sections.append("⏰ Upcoming Deadlines & Reminders:\n" + "\n".join(
+                    f"• {item['text']}" + (f" (by {item['due_at']})" if item.get("due_at") else "")
                     for item in briefing["reminders"][:5]
                 ))
             if briefing.get("goals"):
                 goals_lines = []
                 for goal in briefing["goals"][:5]:
                     bar = _render_bar(goal.get("progress_percent", 0))
-                    next_step = goal.get("next_recommended_step", "выбрать следующий шаг")
+                    next_step = goal.get("next_recommended_step", "choose next step")
                     goals_lines.append(
                         f"• {goal['title']} [{bar}] {goal.get('progress_percent', 0)}%\n"
-                        f"  👉 Следующий шаг: {next_step}"
+                        f"  👉 Next step: {next_step}"
                     )
-                sections.append("🎯 Цели в фокусе (/tasks):\n" + "\n".join(goals_lines))
+                sections.append("🎯 Active Goals in Focus (/tasks):\n" + "\n".join(goals_lines))
             if briefing.get("notes"):
                 notes_lines = [
                     f"• {note.get('text', '')[:120]}" + (f" (#{', #'.join(note.get('tags', []))})" if note.get("tags") else "")
                     for note in briefing["notes"][:3]
                 ]
-                sections.append("💡 Заметки и идеи:\n" + "\n".join(notes_lines))
+                sections.append("💡 Notes & Ideas:\n" + "\n".join(notes_lines))
             try:
                 await self._bot.send_message(chat_id, sanitize_latex("\n\n".join(sections)))
             except TelegramAPIError:

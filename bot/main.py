@@ -23,8 +23,8 @@ async def main() -> None:
         settings = load_settings()
     except ValueError as error:
         logger.error("Invalid bot configuration: %s", error)
-        print(f"\n[OPENSMART ОШИБКА КОНФИГУРАЦИИ]: {error}", file=sys.stderr)
-        print("Проверьте переменные окружения на сервере или файл .env. См. .env.example\n", file=sys.stderr)
+        print(f"\n[OPENSMART CONFIG ERROR]: {error}", file=sys.stderr)
+        print("Check environment variables on your server or your .env file. See .env.example\n", file=sys.stderr)
         return
 
     logger.info(
@@ -32,8 +32,8 @@ async def main() -> None:
         settings.llm_base_url,
         settings.llm_model,
     )
-    print(f"\n[OPENSMART] Подключение к LLM: {settings.llm_base_url}")
-    print(f"[OPENSMART] Модель: {settings.llm_model}\n")
+    print(f"\n[OPENSMART] Connecting to LLM: {settings.llm_base_url}")
+    print(f"[OPENSMART] Model: {settings.llm_model}\n")
 
     bot = Bot(token=settings.bot_token)
     dispatcher = Dispatcher()
@@ -52,22 +52,22 @@ async def main() -> None:
         try:
             me = await bot.get_me()
             logger.info("Bot connected as @%s (id=%s)", me.username, me.id)
-            print(f">>> OPENSMART успешно запущен как @{me.username} <<<")
-            print("Бот готов к работе. Нажмите Ctrl+C для остановки.\n")
+            print(f">>> OPENSMART successfully started as @{me.username} <<<")
+            print("Bot is ready. Press Ctrl+C to stop.\n")
         except TelegramAPIError:
             logger.exception("Failed to get bot info")
 
         try:
             await bot.set_my_commands(
                 [
-                    BotCommand(command="start", description="Запустить бота"),
-                    BotCommand(command="tasks", description="Долгосрочные цели и задачи"),
-                    BotCommand(command="notes", description="Заметки, идеи и теги"),
-                    BotCommand(command="forget", description="Безопасное удаление информации"),
-                    BotCommand(command="daily", description="План на день и дедлайны"),
-                    BotCommand(command="focus", description="Таймер фокус-сессии"),
-                    BotCommand(command="new", description="Сбросить контекст диалога"),
-                    BotCommand(command="help", description="Справка по всем командам"),
+                    BotCommand(command="start", description="Start the bot"),
+                    BotCommand(command="tasks", description="Long-term goals & milestone tracking"),
+                    BotCommand(command="notes", description="Personal notes, ideas & tags"),
+                    BotCommand(command="forget", description="Safely remove specific items"),
+                    BotCommand(command="daily", description="Daily briefing, deadlines & focus"),
+                    BotCommand(command="focus", description="Focus session timer"),
+                    BotCommand(command="new", description="Reset conversation context"),
+                    BotCommand(command="help", description="Help & command list"),
                 ]
             )
         except TelegramAPIError:

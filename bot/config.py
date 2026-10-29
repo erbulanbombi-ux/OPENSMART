@@ -21,7 +21,7 @@ def _is_valid_key(value: str) -> bool:
     if not val:
         return False
     low = val.casefold()
-    if low.startswith("replace_") or low.startswith("ваш_") or "your_" in low or len(val) < 8:
+    if low.startswith("your_") or low.startswith("replace_") or len(val) < 8:
         return False
     return True
 
@@ -34,12 +34,11 @@ def load_settings() -> Settings:
 
     openrouter_key = (os.getenv("OPENROUTER_API_KEY") or "").strip().strip('"').strip("'")
     openai_key = (os.getenv("OPENAI_API_KEY") or "").strip().strip('"').strip("'")
-    nebius_key = (os.getenv("NEBIUS_API_KEY") or "").strip().strip('"').strip("'")
     generic_key = (os.getenv("LLM_API_KEY") or "").strip().strip('"').strip("'")
     custom_url = (os.getenv("LLM_BASE_URL") or "").strip().strip('"').strip("'")
     custom_model = (os.getenv("LLM_MODEL") or "").strip().strip('"').strip("'")
 
-    # Smart provider resolution (OpenRouter is default/recommended for stability and tools):
+    # Smart provider resolution (OpenRouter is recommended):
     if _is_valid_key(openrouter_key):
         llm_api_key = openrouter_key
         default_base_url = "https://openrouter.ai/api/v1"
@@ -48,34 +47,25 @@ def load_settings() -> Settings:
         llm_api_key = openai_key
         default_base_url = "https://api.openai.com/v1"
         default_model = "gpt-4o-mini"
-    elif _is_valid_key(nebius_key):
-        llm_api_key = nebius_key
-        default_base_url = "https://api.studio.nebius.ai/v1/"
-        default_model = "meta-llama/Meta-Llama-3.1-70B-Instruct-fast"
     else:
-        llm_api_key = generic_key or openrouter_key or openai_key or nebius_key
+        llm_api_key = generic_key or openrouter_key or openai_key
         default_base_url = "https://openrouter.ai/api/v1"
         default_model = "openai/gpt-4o-mini"
 
     llm_base_url = custom_url or default_base_url
     llm_model = custom_model or default_model
 
-    # Model slug normalization to avoid 404s:
-    # 1. OpenRouter model slugs are case-sensitive and lowercase
+    # Model slug normalization
     if "openrouter.ai" in llm_base_url.lower():
         if "meta-llama/meta-llama" in llm_model.lower():
             llm_model = "openai/gpt-4o-mini"
         elif llm_model.startswith("meta-llama/Meta-Llama"):
             llm_model = llm_model.lower()
-    # 2. Nebius serverless uses -fast suffix
-    elif "nebius" in llm_base_url.lower():
-        if llm_model == "meta-llama/Meta-Llama-3.1-70B-Instruct":
-            llm_model = "meta-llama/Meta-Llama-3.1-70B-Instruct-fast"
 
     if not bot_token or not _is_valid_key(bot_token):
-        raise ValueError("Укажите корректный BOT_TOKEN в переменных окружения.")
+        raise ValueError("Set a valid BOT_TOKEN in your environment variables.")
     if not llm_api_key or not _is_valid_key(llm_api_key):
-        raise ValueError("Укажите действующий OPENROUTER_API_KEY, OPENAI_API_KEY или NEBIUS_API_KEY в переменных окружения.")
+        raise ValueError("Set a valid OPENROUTER_API_KEY or OPENAI_API_KEY in your environment variables.")
 
     checkin_timezone = (os.getenv("CHECKIN_TIMEZONE") or "UTC").strip()
     try:

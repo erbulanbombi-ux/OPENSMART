@@ -6,11 +6,11 @@
 
 <p align="center">
   <strong>The fastest, smartest, and most resource-efficient open-source Telegram AI assistant.</strong><br/>
-  Powered by Nebius AI Studio · Runs 24/7 on a 512 MB VPS for $2/mo · Long-term Goal Planning · Smart Notes · Daily Briefings · Deep Focus
+  Powered by OpenRouter & OpenAI · Runs 24/7 on a 512 MB VPS for $2/mo · Long-term Goal Planning · Smart Notes · Daily Briefings · Deep Focus
 </p>
 
 <p align="center">
-  <a href="https://nebius.com"><img src="https://img.shields.io/badge/Powered%20by-Nebius%20AI%20Studio-0066FF.svg?style=flat-square&logo=nebius&logoColor=white" alt="Nebius AI Studio" /></a>
+  <a href="https://openrouter.ai"><img src="https://img.shields.io/badge/Powered%20by-OpenRouter%20AI-6366F1.svg?style=flat-square" alt="OpenRouter AI" /></a>
   <a href="https://github.com/erbulanbombi-ux/OPENSMART"><img src="https://img.shields.io/badge/status-production--ready-brightgreen?style=flat-square" alt="Status" /></a>
   <a href="https://python.org"><img src="https://img.shields.io/badge/python-3.11+-3776AB.svg?style=flat-square&logo=python&logoColor=white" alt="Python Version" /></a>
   <a href="https://core.telegram.org/bots"><img src="https://img.shields.io/badge/Telegram-aiogram%203.x-2CA5E0?style=flat-square&logo=telegram&logoColor=white" alt="Telegram Bot" /></a>
@@ -32,8 +32,8 @@
 ---
 
 > [!NOTE]
-> 🚀 **Built for Hackathons & 24/7 Production Deployment.**
-> OPENSMART is an autonomous personal AI companion powered by **Nebius AI Studio** (`meta-llama/Meta-Llama-3.1-70B-Instruct`). It solves the real-life productivity bottleneck: breaking down ambitious long-term goals into verifiable milestones, capturing spontaneous ideas without friction, and keeping you accountable daily — all while consuming less than 80 MB RAM.
+> 🚀 **Built for 24/7 Production Deployment.**
+> OPENSMART is an autonomous personal AI companion powered by **OpenRouter & OpenAI** (`openai/gpt-4o-mini`). It solves the real-life productivity bottleneck: breaking down ambitious long-term goals into verifiable milestones, capturing spontaneous ideas without friction, and keeping you accountable daily — all while consuming less than 80 MB RAM.
 
 ---
 
@@ -50,7 +50,7 @@ cd OPENSMART
 
 # 2. Configure your environment
 cp .env.example .env
-nano .env  # Add your BOT_TOKEN and NEBIUS_API_KEY
+nano .env  # Add your BOT_TOKEN and OPENROUTER_API_KEY
 
 # 3. Start the container in background
 docker compose up -d --build
@@ -63,10 +63,10 @@ docker compose logs -f
 
 ---
 
-### Option B: 🐍 Local Python 3.11+ Setup
+### Option B: 🐍 Python Virtual Environment
 
 ```bash
-# 1. Clone and create virtual environment
+# 1. Clone and enter repo
 git clone https://github.com/erbulanbombi-ux/OPENSMART.git
 cd OPENSMART
 python3 -m venv .venv
@@ -80,7 +80,7 @@ pip install -r requirements.txt
 
 # 4. Configure .env
 cp .env.example .env
-# Edit BOT_TOKEN and NEBIUS_API_KEY in .env
+# Edit BOT_TOKEN and OPENROUTER_API_KEY in .env
 
 # 5. Launch OPENSMART
 python3 -m bot.main
@@ -110,7 +110,7 @@ The **OPENSMART** avatar and visual language were created to embody the core phi
 <td width="50%" valign="top">
 
 ### ⚡ Ultra-Lightweight & Fast
-Engineered with non-blocking Python `asyncio`, `aiogram 3`, and `httpx`. Backed by **Nebius AI Studio** for low-latency inference. Consumes **~60 MB RAM at idle** and rarely exceeds 120 MB under heavy load. Operates smoothly on a **512 MB / 0.5 vCPU ($2/month)** server tier.
+Engineered with non-blocking Python `asyncio`, `aiogram 3`, and `httpx`. Backed by fast, reliable LLM providers. Consumes **~60 MB RAM at idle** and rarely exceeds 120 MB under heavy load. Operates smoothly on a **512 MB / 0.5 vCPU ($2/month)** server tier.
 
 </td>
 <td width="50%" valign="top">
@@ -124,7 +124,7 @@ Vague goals like *"I want to learn English"* trigger proactive AI-assisted clari
 <td width="50%" valign="top">
 
 ### 📝 Frictionless Smart Notes (`/notes`)
-Create notes directly from regular messages without rigid commands: `Заметка: Купить книги #учёба` or `Запиши: Идея для стартапа #идеи`. Extracts `#tags`, attaches timestamps, and provides full-text search.
+Create notes directly from regular messages without rigid commands: `Note: Buy books #study` or `Save: Mobile app idea #startup`. Extracts `#tags`, attaches timestamps, and provides full-text search.
 
 </td>
 <td width="50%" valign="top">
@@ -138,13 +138,13 @@ Say goodbye to accidental data loss. Searching by keyword or ID previews matchin
 <td width="50%" valign="top">
 
 ### ☀️ Autonomous Daily Digest (`/daily`)
-Every morning at 08:00 (or on demand), OPENSMART prioritizes your agenda: calculates **"What to do first"** based on deadlines and goals, surfaces relevant notes, and keeps you on track without notification spam.
+Receive morning briefings and proactive check-ins at 09:00, 14:00, and 20:00 (fully customizable via cron). Evaluates upcoming deadlines, recommends what to tackle first, and keeps momentum alive.
 
 </td>
 <td width="50%" valign="top">
 
 ### ⏱️ Deep Work Accountability (`/focus`)
-Built-in Pomodoro/accountability focus sessions (1–180 minutes). Maintains gentle contextual awareness: if you get sidetracked, OPENSMART softly guides you back to your primary task.
+Start Pomodoro-style focus intervals (`/focus 25`). If you get sidetracked during an active session, the assistant gently nudges you back onto your chosen priority with calm discipline.
 
 </td>
 </tr>
@@ -154,77 +154,15 @@ Built-in Pomodoro/accountability focus sessions (1–180 minutes). Maintains gen
 
 ## 📊 Comparison
 
-How OPENSMART compares to conventional chatbots and heavy agent frameworks:
-
-| Feature / Metric | Generic Telegram Bot | Heavy Agent Frameworks | Simple Note Bots | OPENSMART 🚀 |
+| Feature | Typical Telegram Bots | Local LLM Agents (Ollama) | SaaS Note Apps | 🚀 **OPENSMART** |
 |---|---|---|---|---|
-| **AI Infrastructure** | Varies / OpenAI | Expensive GPUs | None | 🚀 **Nebius AI Studio Cloud** |
-| **RAM Footprint (Idle)** | 150–300 MB | 1.2 GB – 4 GB | 90–150 MB | 🚀 **~60 MB RAM** |
-| **Minimum VPS Requirement** | 1–2 GB RAM | 4–8 GB RAM / GPU | 512 MB RAM | 🚀 **512 MB RAM / 0.5 vCPU ($2/mo)** |
-| **Goal Decomposition Engine** | 🚫 None | ⚠️ Raw unstructured text | 🚫 None | 🚀 **Automatic 5-stage milestones & progress bars** |
-| **Notes from Plain Text** | 🚫 Command-only | ⚠️ Inconsistent | 🚫 Command-only | 🚀 **Dual regex + LLM intent detection** |
-| **Safe Deletion Guard** | 🚫 Immediate / No undo | 🚫 None | ⚠️ Simple delete | 🚀 **Search preview + strict `YES` confirmation** |
-| **Autonomous Daily Briefing** | 🚫 None | ⚠️ Heavy external cron | 🚫 None | 🚀 **Smart APScheduler (08:00) with priority ranking** |
-| **Markdown Resilience** | ⚠️ Fails silently on syntax | ⚠️ Drops response | 🚫 Plain text only | 🚀 **MarkdownV2 with auto-recovery fallback** |
-| **One-Click Deploy** | ⚠️ Manual Python setup | ⚠️ Complex dependencies | ⚠️ Manual setup | 🚀 **Docker Compose in 1 command** |
-
----
-
-## 🛠 Features Walkthrough
-
-### 1. 🎯 Long-Term Goal Management (`/tasks` & `/goals`)
-* **Milestone Decomposition**: Creates ordered subtasks with statuses: `⏳` Not started, `🔄` In progress, `✅` Completed.
-* **Progress Tracking**: Real-time progress percentage bar `[██████░░] 60%`.
-* **Step-by-Step Advancement**: Use `/tasks advance <ID>` to complete the current milestone, record it in history, and unlock the next action.
-* **Detailed Goal Cards**: `/tasks view <ID>` shows desired outcomes, deadlines, priority, and full history of finished milestones.
-
-```text
-🎯 Цель создана: «Подготовиться к IELTS» [ID: a1b2c3d4]
-🏁 Желаемый результат: Сдать на 7.5 баллов через 6 месяцев
-📊 Статус: В процессе [██░░░░░░] 20%
-
-Этапы:
-  ✅ 1. Пройти диагностический тест и определить уровень
-  🔄 2. Сформировать план занятий (30 мин ежедневно)
-  ⏳ 3. Освоить Academic Writing Task 1 и Task 2
-  ⏳ 4. Провести 10 разговорных сессий с преподавателем
-  ⏳ 5. Сдать пробный экзамен на целевой балл
-
-👉 Следующий шаг: Сформировать план занятий
-Отметить этап выполненным: /tasks advance a1b2c3d4
-```
-
-### 2. 📝 Frictionless Personal Notes (`/notes`)
-* **Plain Text Capture**: Send `Заметка: проверить сервер #деплой` or `Запиши: Идея для статьи #блог`.
-* **Full-Text & Tag Search**: `/notes search деплой` or `/notes #блог`.
-* **Note Cards**: `/notes view <ID>` displays creation date, last updated timestamp, and tags.
-* **Inline Editing**: `/notes edit <ID> | Обновлённый текст #новыйтег`.
-
-### 3. 🗑 Surgical Deletion with Guardrails (`/forget`)
-* **Targeted Erasure**: Deletes a specific note, goal, or memory entry without wiping your entire conversation history.
-* **Search Preview**: Shows the exact record before deletion.
-* **Mandatory Confirmation**: Requires typing **`YES`** or **`ДА`**. Any other input safely cancels the deletion.
-
-```text
-🔍 Найдена запись для удаления:
-• [Заметка] ID: a1b2c3d4
-  [2026-10-22] Проверить сервер (#деплой)
-
-⚠️ Для подтверждения отправьте: YES
-Любой другой ответ отменит удаление.
-```
-
-### 4. ☀️ Morning Briefing & Priorities (`/daily`)
-Runs automatically every morning at **08:00** in your configured timezone (`CHECKIN_TIMEZONE`) or on demand via `/daily`:
-* 🔥 **What to do first**: Identifies your highest-leverage task based on deadlines and goal priorities.
-* ⏰ **Imminent Deadlines**: Highlights urgent reminders and due dates.
-* 🎯 **Active Goals**: Displays current milestones and progress.
-* 💡 **Contextual Notes**: Surfaces relevant thoughts and ideas.
-
-### 5. ⏱ Deep Focus Session (`/focus`)
-* `/focus 25` — Starts a 25-minute distraction-free focus block.
-* Context-aware encouragement: if you start chatting during a focus session, the assistant gently nudges you back to the task at hand.
-* `/focus stop` — Ends the timer early.
+| **Memory Footprint** | 200–500 MB | 4–16 GB RAM | Web browser / Electron | **~60 MB RAM** |
+| **Minimum Hardware** | 1 vCPU / 1 GB RAM | High-end GPU / M-Series | Cloud subscription | **0.5 vCPU / 512 MB RAM** |
+| **Hosting Cost** | $7–$20 / mo | Expensive local rig | $10–$25 / user / mo | **~$2 / mo VPS or Free Tier** |
+| **Goal Milestones** | Simple to-do list | Unstructured conversation | Rigid manual hierarchy | **Autonomous AI decomposition** |
+| **Data Safety** | Accidental overwrites | Lost upon session restart | Vendor lock-in | **Guarded `YES` confirmation** |
+| **Proactive Check-ins** | None | None | Push notification spam | **Context-aware cron schedule** |
+| **Interface** | Bot menus / WebUI | Terminal only | Mobile / Desktop app | **Everywhere in Telegram** |
 
 ---
 
@@ -234,18 +172,18 @@ Runs automatically every morning at **08:00** in your configured timezone (`CHEC
 |---|---|---|
 | `/start` | Welcome message and quick start guide | `/start` |
 | `/tasks` | List active goals with progress bars and milestones | `/tasks` |
-| `/tasks add` | Create goal with optional desired outcome | `/tasks add Английский \| Уровень B2` |
+| `/tasks add` | Create goal with optional desired outcome | `/tasks add Learn Spanish \| Level B2 in 6 months` |
 | `/tasks advance <ID>` | Complete current milestone and advance progress | `/tasks advance a1b2c3` |
 | `/tasks view <ID>` | View detailed goal card with full milestone history | `/tasks view a1b2c3` |
 | `/tasks pause <ID>` | Pause an active goal | `/tasks pause a1b2c3` |
 | `/tasks resume <ID>` | Resume a paused goal | `/tasks resume a1b2c3` |
 | `/tasks done <ID>` | Complete an entire goal early (100%) | `/tasks done a1b2c3` |
 | `/notes` | View all saved notes with tags and dates | `/notes` |
-| `/notes add <text>` | Add note with hashtags | `/notes add Идея для приложения #стартап` |
+| `/notes add <text>` | Add note with hashtags | `/notes add Idea for mobile app #startup` |
 | `/notes view <ID>` | View specific note with creation and update dates | `/notes view a1b2c3` |
-| `/notes edit <ID> \| <text>` | Edit note text and tags | `/notes edit a1b2c3 \| Новый текст #тег` |
-| `/notes search <query>` | Search notes by text or tag | `/notes search стартап` |
-| `/forget <query>` | Safely find and delete a note or memory with `YES` | `/forget стартап` |
+| `/notes edit <ID> \| <text>` | Edit note text and tags | `/notes edit a1b2c3 \| Updated text #new` |
+| `/notes search <query>` | Search notes by text or tag | `/notes search startup` |
+| `/forget <query>` | Safely find and delete a note or memory with `YES` | `/forget startup` |
 | `/daily` | Generate immediate daily briefing and priorities | `/daily` |
 | `/focus <min>` | Start deep work timer (1–180 minutes) | `/focus 25` |
 | `/focus stop` | Stop active focus session | `/focus stop` |
@@ -268,7 +206,7 @@ flowchart TD
         Router -->|"Direct Triggers"| FastForget["🗑 Guarded Forget Engine"]
         Router -->|"Conversational"| Agent["🤖 Agent Controller"]
         
-        Agent <-->|"Async Chat Completions"| Nebius["🌐 Nebius AI Studio Cloud\n(meta-llama/Meta-Llama-3.1-70B-Instruct)"]
+        Agent <-->|"Async Chat Completions"| Provider["🌐 OpenRouter / OpenAI API\n(openai/gpt-4o-mini)"]
         Agent <-->|"Function Calling"| ToolRegistry["🛠 Tool Registry"]
         
         subgraph Tools ["Built-in Tools"]
@@ -298,10 +236,9 @@ flowchart TD
 | Variable | Required | Default | Description |
 |---|:---:|---|---|
 | `BOT_TOKEN` | **Yes** | — | Telegram Bot API token from [@BotFather](https://t.me/BotFather) |
-| `NEBIUS_API_KEY` | **Yes** | — | High-performance API key from [Nebius AI Studio](https://nebius.com) |
-| `LLM_MODEL` | No | `meta-llama/Meta-Llama-3.1-70B-Instruct` | State-of-the-art open-weight LLM hosted on Nebius AI Studio |
-| `LLM_BASE_URL` | No | `https://api.studio.nebius.ai/v1/` | Nebius AI Studio OpenAI-compatible endpoint |
-| `CHECKIN_TIMEZONE` | No | `UTC` | IANA timezone (e.g. `Europe/Moscow`, `Asia/Almaty`) |
+| `OPENROUTER_API_KEY` | **Yes** | — | OpenRouter API key from [OpenRouter](https://openrouter.ai) |
+| `OPENAI_API_KEY` | Optional | — | Direct OpenAI API key from [OpenAI](https://platform.openai.com) |
+| `CHECKIN_TIMEZONE` | No | `UTC` | IANA timezone (e.g. `UTC`, `America/New_York`, `Asia/Tokyo`) |
 | `CHECKIN_HOURS` | No | `9,14,20` | Comma-separated hours for proactive check-ins |
 | `OPENSMART_MEMORY_PATH` | No | `bot/memory.json` | Custom path to memory storage file |
 
@@ -324,6 +261,6 @@ Contributions, issues, and feature suggestions are welcome!
 This project is licensed under the **MIT License** — see the [LICENSE](./LICENSE) file for details.
 
 <p align="center">
-  <b>Built with ❤️ for focused minds and high achievers. Powered by Nebius AI Studio.</b><br/>
+  <b>Built with ❤️ for focused minds and high achievers.</b><br/>
   <sub>OPENSMART — Unlock your potential.</sub>
 </p>

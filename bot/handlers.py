@@ -27,11 +27,11 @@ router = Router()
 _PENDING_FORGET: dict[int, list[str]] = {}
 _FOCUS_TASKS: dict[int, asyncio.Task[None]] = {}
 
-STATUS_RU = {
-    "not_started": "Не начата",
-    "in_progress": "В процессе",
-    "paused": "Приостановлена",
-    "completed": "Завершена",
+STATUS_EN = {
+    "not_started": "Not started",
+    "in_progress": "In progress",
+    "paused": "Paused",
+    "completed": "Completed",
 }
 
 
@@ -65,21 +65,21 @@ async def _safe_answer(message: Message, text: str, parse_mode: str | None = Non
 async def handle_start(message: Message) -> None:
     await _safe_answer(
         message,
-        "👋 Привет! Я OPENSMART — твой персональный AI-ассистент для учёбы, спорта, проектов и личных целей.\n\n"
-        "Что я умею:\n"
-        "🎯 /tasks — долгосрочные цели с этапами, историей и прогрессом\n"
-        "📝 /notes — хранилище личных заметок, идей с тегами и датами\n"
-        "☀️ /daily — ежедневный помощник (что сделать первым, дедлайны, цели)\n"
-        "🗑 /forget — безопасное удаление конкретных записей с подтверждением YES\n"
-        "⏱ /focus 25 — таймер глубокой концентрации\n\n"
-        "Напиши свою цель (например, «Хочу учить английский») или мысль («Заметка: купить книги #учёба»), и начнём!",
+        "👋 Hello! I am OPENSMART — your personal AI assistant for goals, study, fitness, habits, and projects.\n\n"
+        "What I can do:\n"
+        "🎯 /tasks — Long-term goals with milestones, history, and progress\n"
+        "📝 /notes — Personal notes & ideas with tags and dates\n"
+        "☀️ /daily — Daily assistant (first priority, deadlines, goals)\n"
+        "🗑 /forget — Safely remove specific items with YES confirmation\n"
+        "⏱ /focus 25 — Deep work & concentration timer\n\n"
+        "Send me your goal (e.g., \"I want to learn Spanish\") or a thought (\"Note: buy books #study\"), and let's get started!",
     )
 
 
 @router.message(Command("new"))
 async def handle_new(message: Message, agent: Agent) -> None:
     agent.reset_session(message.chat.id)
-    await _safe_answer(message, "Контекст диалога очищен. О чём поговорим?")
+    await _safe_answer(message, "Conversation context has been cleared. What would you like to discuss?")
 
 
 @router.message(Command("memory"))
@@ -105,8 +105,8 @@ async def handle_tasks(message: Message) -> None:
         if not title:
             await _safe_answer(
                 message,
-                "Использование: /tasks add Название цели | Желаемый результат\n"
-                "Пример: /tasks add Учить английский | Сдать IELTS на 7.0 через 6 месяцев",
+                "Usage: /tasks add Goal Title | Desired Outcome\n"
+                "Example: /tasks add Learn English | Pass IELTS with 7.5 in 6 months",
             )
             return
 
@@ -127,9 +127,9 @@ async def handle_tasks(message: Message) -> None:
             await _safe_answer(
                 message,
                 f"🎯 {result['question']}\n\n"
-                f"📋 Рекомендуемый план этапов:\n{steps}\n\n"
-                "💡 Чтобы утвердить цель, отправьте команду с желаемым результатом:\n"
-                f"/tasks add {title} | <твой желаемый результат>",
+                f"📋 Recommended milestone roadmap:\n{steps}\n\n"
+                "💡 To confirm your goal, send:\n"
+                f"/tasks add {title} | <your desired outcome>",
             )
         elif result.get("created"):
             goal = result["created"]
@@ -139,16 +139,16 @@ async def handle_tasks(message: Message) -> None:
             )
             await _safe_answer(
                 message,
-                f"🎯 Цель создана!\n"
-                f"📌 Название: {goal['title']} [ID: {goal['id']}]\n"
-                f"🏁 Желаемый результат: {goal['desired_result']}\n"
-                f"📊 Статус: {STATUS_RU.get(goal['status'], goal['status'])}\n\n"
-                f"Этапы:\n{milestones_text}\n\n"
-                f"👉 Следующий шаг: {goal.get('next_recommended_step', 'Начать')}\n\n"
-                f"Отметить этап выполненным: /tasks advance {goal['id']}",
+                f"🎯 Goal created!\n"
+                f"📌 Title: {goal['title']} [ID: {goal['id']}]\n"
+                f"🏁 Desired outcome: {goal['desired_result']}\n"
+                f"📊 Status: {STATUS_EN.get(goal['status'], goal['status'])}\n\n"
+                f"Milestones:\n{milestones_text}\n\n"
+                f"👉 Next step: {goal.get('next_recommended_step', 'Start')}\n\n"
+                f"Mark milestone completed: /tasks advance {goal['id']}",
             )
         else:
-            await _safe_answer(message, "Не удалось создать цель. Проверьте формулировку и попробуйте снова.")
+            await _safe_answer(message, "Failed to create goal. Please check your wording and try again.")
         return
 
     # 2. /tasks advance <id> or /tasks next <id>
@@ -156,20 +156,20 @@ async def handle_tasks(message: Message) -> None:
         goal_id = payload or None
         result = await execute_tool("manage_goal", {"action": "advance", "goal_id": goal_id}, scope=scope)
         if result.get("error"):
-            await _safe_answer(message, f"Ошибка: {result['error']}\nИспользуйте: /tasks advance ID")
+            await _safe_answer(message, f"Error: {result['error']}\nUsage: /tasks advance ID")
             return
         goal = result.get("updated", {})
         progress = goal.get("progress_percent", 0)
         bar = _render_progress_bar(progress)
-        next_step = goal.get("next_recommended_step", "Все этапы завершены!")
-        status = STATUS_RU.get(goal.get("status"), goal.get("status"))
+        next_step = goal.get("next_recommended_step", "All milestones completed!")
+        status = STATUS_EN.get(goal.get("status"), goal.get("status"))
         await _safe_answer(
             message,
-            f"🎉 Отлично! Этап выполнен!\n\n"
-            f"🎯 Цель: «{goal.get('title')}» [ID: {goal.get('id')}]\n"
-            f"📊 Прогресс: [{bar}] {progress}% ({status})\n"
-            f"👉 Следующий шаг: {next_step}\n\n"
-            f"Подробнее: /tasks view {goal.get('id')}",
+            f"🎉 Great job! Milestone completed!\n\n"
+            f"🎯 Goal: \"{goal.get('title')}\" [ID: {goal.get('id')}]\n"
+            f"📊 Progress: [{bar}] {progress}% ({status})\n"
+            f"👉 Next step: {next_step}\n\n"
+            f"Details: /tasks view {goal.get('id')}",
         )
         return
 
@@ -177,18 +177,18 @@ async def handle_tasks(message: Message) -> None:
     if subcommand in {"pause", "stop"}:
         result = await execute_tool("manage_goal", {"action": "pause", "goal_id": payload}, scope=scope)
         if result.get("updated"):
-            await _safe_answer(message, f"⏸ Цель «{result['updated'].get('title')}» приостановлена.")
+            await _safe_answer(message, f"⏸ Goal \"{result['updated'].get('title')}\" paused.")
         else:
-            await _safe_answer(message, "Не удалось поставить цель на паузу. Укажите ID: /tasks pause ID")
+            await _safe_answer(message, "Could not pause goal. Specify ID: /tasks pause ID")
         return
 
     # 4. /tasks resume <id>
     if subcommand in {"resume", "continue", "start"}:
         result = await execute_tool("manage_goal", {"action": "resume", "goal_id": payload}, scope=scope)
         if result.get("updated"):
-            await _safe_answer(message, f"▶️ Цель «{result['updated'].get('title')}» возобновлена!")
+            await _safe_answer(message, f"▶️ Goal \"{result['updated'].get('title')}\" resumed!")
         else:
-            await _safe_answer(message, "Не удалось возобновить цель. Укажите ID: /tasks resume ID")
+            await _safe_answer(message, "Could not resume goal. Specify ID: /tasks resume ID")
         return
 
     # 5. /tasks done <id> or /tasks complete <id>
@@ -198,11 +198,11 @@ async def handle_tasks(message: Message) -> None:
             goal = result["completed"]
             await _safe_answer(
                 message,
-                f"🏆 Поздравляем! Цель «{goal.get('title')}» успешно завершена (100%)!\n"
-                f"Все выполненные этапы сохранены в истории.",
+                f"🏆 Congratulations! Goal \"{goal.get('title')}\" successfully completed (100%)!\n"
+                f"All completed milestones are recorded in history.",
             )
         else:
-            await _safe_answer(message, "Не удалось завершить цель. Укажите ID: /tasks done ID")
+            await _safe_answer(message, "Could not complete goal. Specify ID: /tasks done ID")
         return
 
     # 6. /tasks view <id> or /tasks get <id>
@@ -213,40 +213,40 @@ async def handle_tasks(message: Message) -> None:
             goal = result["goal"]
             progress = goal.get("progress_percent", 0)
             bar = _render_progress_bar(progress)
-            status = STATUS_RU.get(goal.get("status"), goal.get("status"))
+            status = STATUS_EN.get(goal.get("status"), goal.get("status"))
             milestones_lines = []
             for i, step in enumerate(goal.get("milestones", []), 1):
                 icon = "✅" if step.get("status") == "completed" else ("🔄" if step.get("id") == goal.get("current_milestone") else "⏳")
                 milestones_lines.append(f"{icon} {i}. {step.get('title')}")
-            milestones_text = "\n".join(milestones_lines) or "Этапы не заданы"
+            milestones_text = "\n".join(milestones_lines) or "No milestones set"
 
             history_lines = []
             for h in goal.get("history", []):
                 time_str = h.get("completed_at", "")[:16].replace("T", " ")
                 history_lines.append(f"• {h.get('title')} ({time_str})")
-            history_text = "\n".join(history_lines) if history_lines else "Пока нет завершённых этапов"
+            history_text = "\n".join(history_lines) if history_lines else "No completed milestones yet"
 
             details = [
-                f"🎯 Цель: {goal.get('title')} [ID: {goal.get('id')}]",
-                f"🏁 Желаемый результат: {goal.get('desired_result') or 'Не указан'}",
-                f"📊 Прогресс: [{bar}] {progress}% ({status})",
-                f"👉 Следующий шаг: {goal.get('next_recommended_step', 'Нет шага')}",
-                f"\n📋 Этапы и подзадачи:\n{milestones_text}",
-                f"\n📜 История выполненных этапов:\n{history_text}",
+                f"🎯 Goal: {goal.get('title')} [ID: {goal.get('id')}]",
+                f"🏁 Desired outcome: {goal.get('desired_result') or 'Not specified'}",
+                f"📊 Progress: [{bar}] {progress}% ({status})",
+                f"👉 Next step: {goal.get('next_recommended_step', 'None')}",
+                f"\n📋 Milestones & subtasks:\n{milestones_text}",
+                f"\n📜 Completed history:\n{history_text}",
             ]
             if goal.get("deadline"):
-                details.append(f"⏰ Дедлайн: {goal.get('deadline')}")
-            details.append(f"\nДействия: /tasks advance {goal.get('id')} | /tasks pause {goal.get('id')} | /forget {goal.get('id')}")
+                details.append(f"⏰ Deadline: {goal.get('deadline')}")
+            details.append(f"\nActions: /tasks advance {goal.get('id')} | /tasks pause {goal.get('id')} | /forget {goal.get('id')}")
             await _safe_answer(message, "\n".join(details))
             return
         elif subcommand in {"view", "get", "info"}:
-            await _safe_answer(message, "Цель с таким ID не найдена.")
+            await _safe_answer(message, "Goal with this ID was not found.")
             return
 
     # 7. List active goals (default)
     result = await execute_tool("manage_goal", {"action": "list"}, scope=scope)
     if result.get("error"):
-        await _safe_answer(message, "Не удалось получить список целей. Попробуйте позже.")
+        await _safe_answer(message, "Could not fetch goals. Please try again later.")
         return
     all_goals = result.get("goals", [])
     active_goals = [g for g in all_goals if g.get("status") != "completed"]
@@ -254,19 +254,19 @@ async def handle_tasks(message: Message) -> None:
     if not active_goals:
         await _safe_answer(
             message,
-            "🎯 У вас пока нет активных целей.\n\n"
-            "Создать долгосрочную цель:\n"
-            "• Командой: /tasks add Название | Желаемый результат\n"
-            "• Или обычным сообщением: «Моя цель — выучить английский»",
+            "🎯 You don't have any active goals yet.\n\n"
+            "Create a long-term goal:\n"
+            "• Command: /tasks add Title | Desired outcome\n"
+            "• Plain message: \"My goal is to learn Spanish\"",
         )
         return
 
-    blocks = ["🎯 Ваши активные цели и задачи:\n"]
+    blocks = ["🎯 Your Active Goals & Tasks:\n"]
     for goal in active_goals:
         progress = goal.get("progress_percent", 0)
         bar = _render_progress_bar(progress)
-        status = STATUS_RU.get(goal.get("status"), goal.get("status"))
-        curr_step = goal.get("next_recommended_step") or "Определить следующий шаг"
+        status = STATUS_EN.get(goal.get("status"), goal.get("status"))
+        curr_step = goal.get("next_recommended_step") or "Define next step"
 
         milestones = goal.get("milestones", [])
         m_preview = []
@@ -274,19 +274,19 @@ async def handle_tasks(message: Message) -> None:
             icon = "✅" if s.get("status") == "completed" else ("🔄" if s.get("id") == goal.get("current_milestone") else "⏳")
             m_preview.append(f"  {icon} {i}. {s.get('title')}")
         if len(milestones) > 4:
-            m_preview.append(f"  ... ещё {len(milestones) - 4} этапов")
+            m_preview.append(f"  ... {len(milestones) - 4} more milestones")
 
         block = (
             f"📌 {goal.get('title')} [ID: {goal.get('id')}]\n"
-            f"🏁 Результат: {goal.get('desired_result') or 'Не указан'}\n"
-            f"📊 Прогресс: [{bar}] {progress}% ({status})\n"
-            f"👉 Текущий шаг: {curr_step}\n"
-            f"Этапы:\n" + "\n".join(m_preview) + "\n"
-            f"Действия: /tasks advance {goal.get('id')} | /tasks view {goal.get('id')}"
+            f"🏁 Outcome: {goal.get('desired_result') or 'Not specified'}\n"
+            f"📊 Progress: [{bar}] {progress}% ({status})\n"
+            f"👉 Next step: {curr_step}\n"
+            f"Milestones:\n" + "\n".join(m_preview) + "\n"
+            f"Actions: /tasks advance {goal.get('id')} | /tasks view {goal.get('id')}"
         )
         blocks.append(block)
 
-    blocks.append("💡 Команды: /tasks add Название | Результат, /tasks advance ID, /tasks view ID")
+    blocks.append("💡 Commands: /tasks add Title | Result, /tasks advance ID, /tasks view ID")
     await _safe_answer(message, "\n\n".join(blocks))
 
 
@@ -306,8 +306,8 @@ async def handle_notes(message: Message) -> None:
         if not text:
             await _safe_answer(
                 message,
-                "Использование: /notes add Текст заметки #тег\n"
-                "Пример: /notes add Идея для приложения #стартап #идеи",
+                "Usage: /notes add Note text #tag\n"
+                "Example: /notes add Idea for mobile app #startup #ideas",
             )
             return
         result = await manage_notes("create", text=text, tags=tags, scope=scope)
@@ -317,14 +317,14 @@ async def handle_notes(message: Message) -> None:
             date_str = note.get("date") or note.get("created_at", "")[:10]
             await _safe_answer(
                 message,
-                f"📝 Заметка сохранена!\n"
+                f"📝 Note saved!\n"
                 f"ID: {note['id']}\n"
-                f"Текст: {note['text']}{tags_str}\n"
-                f"📅 Дата: {date_str}\n\n"
-                f"Просмотр: /notes view {note['id']} | Удаление: /forget {note['id']}",
+                f"Text: {note['text']}{tags_str}\n"
+                f"📅 Date: {date_str}\n\n"
+                f"View: /notes view {note['id']} | Delete: /forget {note['id']}",
             )
         else:
-            await _safe_answer(message, "Не удалось сохранить заметку.")
+            await _safe_answer(message, "Failed to save note.")
         return
 
     # 2. /notes view <id> or /notes <id>
@@ -333,25 +333,25 @@ async def handle_notes(message: Message) -> None:
         result = await manage_notes("get", note_id=note_id, scope=scope)
         if result.get("note"):
             note = result["note"]
-            tags_str = ", ".join(f"#{t}" for t in note.get("tags", [])) or "нет тегов"
+            tags_str = ", ".join(f"#{t}" for t in note.get("tags", [])) or "no tags"
             date_str = note.get("date") or note.get("created_at", "")[:10]
             created_at = note.get("created_at", "")[:19].replace("T", " ")
             updated_at = note.get("updated_at", "")[:19].replace("T", " ") if note.get("updated_at") else None
             lines = [
-                f"📝 Заметка [ID: {note['id']}]",
-                f"📅 Дата: {date_str} (создана: {created_at})",
+                f"📝 Note [ID: {note['id']}]",
+                f"📅 Date: {date_str} (created: {created_at})",
             ]
             if updated_at:
-                lines.append(f"🔄 Изменена: {updated_at}")
+                lines.append(f"🔄 Updated: {updated_at}")
             lines.extend([
-                f"🏷 Теги: {tags_str}",
+                f"🏷 Tags: {tags_str}",
                 f"\n{note['text']}",
-                f"\nРедактировать: /notes edit {note['id']} | новый текст",
-                f"Удалить: /forget {note['id']}",
+                f"\nEdit: /notes edit {note['id']} | new text",
+                f"Delete: /forget {note['id']}",
             ])
             await _safe_answer(message, "\n".join(lines))
         else:
-            await _safe_answer(message, "Заметка с таким ID не найдена.")
+            await _safe_answer(message, "Note with this ID was not found.")
         return
 
     # 3. /notes edit <id> | <new text>
@@ -362,8 +362,8 @@ async def handle_notes(message: Message) -> None:
         if not separator or not text:
             await _safe_answer(
                 message,
-                "Использование: /notes edit ID | Новый текст заметки #тег\n"
-                "Пример: /notes edit a1b2c3d4 | Обновлённый текст #новое",
+                "Usage: /notes edit ID | New note text #tag\n"
+                "Example: /notes edit a1b2c3d4 | Updated text #new",
             )
             return
         tags = [w.lstrip("#") for w in text.split() if w.startswith("#") and len(w) > 1]
@@ -371,27 +371,27 @@ async def handle_notes(message: Message) -> None:
         result = await manage_notes("edit", note_id=note_id, text=clean_text or text, tags=tags if tags else None, scope=scope)
         if result.get("updated"):
             note = result["updated"]
-            await _safe_answer(message, f"✅ Заметка [{note['id']}] успешно обновлена!")
+            await _safe_answer(message, f"✅ Note [{note['id']}] successfully updated!")
         else:
-            await _safe_answer(message, "Не удалось обновить заметку. Проверьте ID.")
+            await _safe_answer(message, "Failed to update note. Please verify ID.")
         return
 
     # 4. /notes search <query>
     if action in {"search", "find"}:
         if not payload:
-            await _safe_answer(message, "Укажите поисковый запрос: /notes search ключевое слово")
+            await _safe_answer(message, "Specify search query: /notes search keyword")
             return
         result = await manage_notes("search", query=payload.lstrip("#"), scope=scope)
         notes = result.get("notes", [])
         if not notes:
-            await _safe_answer(message, f"По запросу «{payload}» ничего не найдено.")
+            await _safe_answer(message, f"No notes found matching \"{payload}\".")
             return
         lines = []
         for n in notes:
             tags = f" (#{', #'.join(n.get('tags', []))})" if n.get("tags") else ""
             date = n.get("date") or n.get("created_at", "")[:10]
             lines.append(f"• [{n.get('id')}] {n.get('text', '')[:140]}{tags} ({date})")
-        await _safe_answer(message, f"🔍 Найдено заметок ({len(notes)}):\n" + "\n".join(lines))
+        await _safe_answer(message, f"🔍 Found notes ({len(notes)}):\n" + "\n".join(lines))
         return
 
     # 5. List all notes (/notes)
@@ -401,10 +401,10 @@ async def handle_notes(message: Message) -> None:
         if not notes:
             await _safe_answer(
                 message,
-                "📝 Хранилище заметок пусто.\n\n"
-                "Как сохранить заметку:\n"
-                "• Обычным сообщением: «Заметка: купить молоко #покупки»\n"
-                "• Командой: /notes add текст #тег",
+                "📝 Notes storage is empty.\n\n"
+                "How to save a note:\n"
+                "• Plain message: \"Note: buy groceries #shopping\"\n"
+                "• Command: /notes add text #tag",
             )
             return
         lines = []
@@ -412,20 +412,20 @@ async def handle_notes(message: Message) -> None:
             tags = f" (#{', #'.join(n.get('tags', []))})" if n.get("tags") else ""
             date = n.get("date") or n.get("created_at", "")[:10]
             lines.append(f"• [{n.get('id')}] {n.get('text', '')[:160]}{tags} — 📅 {date}")
-        lines.append("\n💡 Просмотр: /notes view ID | Редактирование: /notes edit ID | новый текст | Удаление: /forget ID")
-        await _safe_answer(message, f"📝 Ваши сохранённые заметки ({len(notes)}):\n" + "\n".join(lines))
+        lines.append("\n💡 View: /notes view ID | Edit: /notes edit ID | new text | Delete: /forget ID")
+        await _safe_answer(message, f"📝 Your saved notes ({len(notes)}):\n" + "\n".join(lines))
         return
 
     await _safe_answer(
         message,
-        "Команды для заметок:\n"
-        "• /notes — список всех заметок\n"
-        "• /notes add текст #тег — добавить заметку\n"
-        "• /notes view ID — просмотр конкретной записи\n"
-        "• /notes edit ID | новый текст — редактировать\n"
-        "• /notes search запрос — поиск по заметкам\n"
-        "• /forget ID — удалить запись с подтверждением YES\n\n"
-        "Также можно просто написать боту: «Заметка: текст заметки #тег»",
+        "Notes commands:\n"
+        "• /notes — list all notes\n"
+        "• /notes add text #tag — add a note\n"
+        "• /notes view ID — view specific note\n"
+        "• /notes edit ID | new text — edit note\n"
+        "• /notes search query — search notes\n"
+        "• /forget ID — delete note with YES confirmation\n\n"
+        "Or simply send: \"Note: note text #tag\"",
     )
 
 
@@ -436,17 +436,17 @@ async def handle_forget(message: Message) -> None:
     if not query:
         await _safe_answer(
             message,
-            "🗑 Команда /forget — безопасное удаление информации\n\n"
-            "Использование: /forget <текст или ID>\n"
-            "Пример: /forget a1b2c3d4 или /forget проект\n\n"
-            "Бот найдёт запись и запросит подтверждение словом YES перед удалением.\n"
-            "Если ответить иначе — запись не будет удалена.",
+            "🗑 /forget — Safely remove specific items\n\n"
+            "Usage: /forget <text or ID>\n"
+            "Example: /forget a1b2c3d4 or /forget project\n\n"
+            "The bot will find matching entries and ask for confirmation with YES before deleting.\n"
+            "Any other response cancels deletion.",
         )
         return
 
     matches = await search_forget_items(query, scope=str(message.chat.id))
     if not matches:
-        await _safe_answer(message, f"По запросу «{query}» ничего не найдено.")
+        await _safe_answer(message, f"No entries found matching \"{query}\".")
         return
 
     _PENDING_FORGET[message.chat.id] = [item["id"] for item in matches]
@@ -455,20 +455,20 @@ async def handle_forget(message: Message) -> None:
         item = matches[0]
         await _safe_answer(
             message,
-            f"🔍 Найдена запись для удаления:\n\n"
-            f"• [{item.get('kind', 'Запись')}] ID: {item['id']}\n"
+            f"🔍 Found entry to delete:\n\n"
+            f"• [{item.get('kind', 'Item')}] ID: {item['id']}\n"
             f"  {item['text']}\n\n"
-            f"⚠️ Для подтверждения отправьте: YES\n"
-            f"Любой другой ответ отменит удаление.",
+            f"⚠️ Reply YES to confirm deletion.\n"
+            f"Any other response will cancel.",
         )
     else:
         lines = "\n".join(f"• [{item.get('kind')}] {item['id']} — {item['text']}" for item in matches)
         await _safe_answer(
             message,
-            f"🔍 Найдено совпадений: {len(matches)}\n\n{lines}\n\n"
-            f"⚠️ Отправьте YES, чтобы подтвердить удаление ВСЕХ найденных записей.\n"
-            f"Чтобы удалить только одну, укажите её точный ID: /forget ID\n"
-            f"Любой другой ответ отменит удаление.",
+            f"🔍 Found {len(matches)} matches:\n\n{lines}\n\n"
+            f"⚠️ Reply YES to confirm deleting ALL found entries.\n"
+            f"To delete only one item, specify its exact ID: /forget ID\n"
+            f"Any other response will cancel.",
         )
 
 
@@ -476,47 +476,47 @@ async def handle_forget(message: Message) -> None:
 async def handle_daily(message: Message) -> None:
     briefing = await get_daily_briefing(str(message.chat.id))
     if briefing.get("error"):
-        await _safe_answer(message, "Не удалось собрать сводку на день. Попробуйте чуть позже.")
+        await _safe_answer(message, "Could not compile daily briefing. Please try again shortly.")
         return
 
-    sections = ["☀️ OPENSMART Daily — ваш помощник на сегодня"]
+    sections = ["☀️ OPENSMART Daily — Your Assistant for Today"]
 
     if briefing.get("first_action"):
-        sections.append(f"🔥 Что лучше сделать первым:\n{briefing['first_action']}")
+        sections.append(f"🔥 Recommended First Priority:\n{briefing['first_action']}")
 
     if briefing.get("reminders"):
         reminders_text = "\n".join(
-            f"• {item['text']}" + (f" (до {item['due_at']})" if item.get("due_at") else "")
+            f"• {item['text']}" + (f" (by {item['due_at']})" if item.get("due_at") else "")
             for item in briefing["reminders"][:5]
         )
-        sections.append(f"⏰ Ближайшие дедлайны и напоминания:\n{reminders_text}")
+        sections.append(f"⏰ Upcoming Deadlines & Reminders:\n{reminders_text}")
 
     if briefing.get("goals"):
         goals_lines = []
         for goal in briefing["goals"][:5]:
             bar = _render_progress_bar(goal.get("progress_percent", 0), length=6)
-            next_step = goal.get("next_recommended_step", "выбрать следующий шаг")
+            next_step = goal.get("next_recommended_step", "choose next step")
             goals_lines.append(
                 f"• {goal['title']} [{bar}] {goal.get('progress_percent', 0)}%\n"
-                f"  👉 Следующий шаг: {next_step}"
+                f"  👉 Next step: {next_step}"
             )
-        sections.append("🎯 Активные цели (/tasks):\n" + "\n".join(goals_lines))
+        sections.append("🎯 Active Goals in Focus (/tasks):\n" + "\n".join(goals_lines))
 
     if briefing.get("notes"):
         notes_lines = [
             f"• {note.get('text', '')[:120]}" + (f" (#{', #'.join(note.get('tags', []))})" if note.get("tags") else "")
             for note in briefing["notes"][:3]
         ]
-        sections.append("💡 Полезные заметки и идеи:\n" + "\n".join(notes_lines))
+        sections.append("💡 Useful Notes & Ideas:\n" + "\n".join(notes_lines))
 
     if len(sections) == 1:
         sections.append(
-            "Пока нет активных целей, задач или заметок.\n\n"
-            "Добавьте первую цель: /tasks add Название | Результат\n"
-            "Или запишите заметку: «Заметка: ваша идея #тег»"
+            "No active goals, tasks, or notes yet.\n\n"
+            "Add your first goal: /tasks add Title | Outcome\n"
+            "Or record a note: \"Note: your idea #tag\""
         )
 
-    sections.append("💡 Команды: /tasks — цели | /notes — заметки | /focus 25 — фокус-сессия")
+    sections.append("💡 Commands: /tasks — goals | /notes — notes | /focus 25 — focus session")
     await _safe_answer(message, "\n\n".join(sections))
 
 
@@ -529,7 +529,7 @@ async def _finish_focus_timer(message: Message, agent: Agent, minutes: int) -> N
         await message.bot.send_message(
             chat_id,
             sanitize_latex(
-                f"Focus-сессия на {minutes} минут завершена. Что удалось продвинуть и какой следующий шаг?"
+                f"Focus session of {minutes} minute(s) completed. What did you accomplish, and what is your next step?"
             ),
         )
     except asyncio.CancelledError:
@@ -548,15 +548,15 @@ async def handle_focus(message: Message, agent: Agent) -> None:
         if task:
             task.cancel()
         agent.end_focus(chat_id)
-        await _safe_answer(message, "Focus-сессия остановлена. Что успел сделать?")
+        await _safe_answer(message, "Focus session stopped. What did you accomplish?")
         return
     try:
         minutes = int(argument)
     except ValueError:
-        await _safe_answer(message, "Укажи длительность в минутах: /focus 25 (от 1 до 180), или /focus stop.")
+        await _safe_answer(message, "Specify duration in minutes: /focus 25 (from 1 to 180), or /focus stop.")
         return
     if not 1 <= minutes <= 180:
-        await _safe_answer(message, "Длительность должна быть от 1 до 180 минут.")
+        await _safe_answer(message, "Duration must be between 1 and 180 minutes.")
         return
     previous = _FOCUS_TASKS.pop(chat_id, None)
     if previous:
@@ -565,8 +565,8 @@ async def handle_focus(message: Message, agent: Agent) -> None:
     _FOCUS_TASKS[chat_id] = asyncio.create_task(_finish_focus_timer(message, agent, minutes))
     await _safe_answer(
         message,
-        f"Focus-сессия началась на {minutes} минут. Напиши, над чем работаешь; "
-        "остановить можно командой /focus stop.",
+        f"Focus session started for {minutes} minute(s). Tell me what you're working on; "
+        "stop anytime with /focus stop.",
     )
 
 
@@ -579,31 +579,31 @@ async def handle_tools(message: Message) -> None:
 async def handle_help(message: Message) -> None:
     await _safe_answer(
         message,
-        "🤖 OPENSMART — твой персональный AI-помощник\n\n"
-        "📌 Управление целями и задачами:\n"
-        "• /tasks — список активных целей и прогресс\n"
-        "• /tasks add Название | Результат — создать цель\n"
-        "• /tasks advance ID — завершить текущий этап\n"
-        "• /tasks view ID — подробности, этапы и история\n"
-        "• /tasks pause ID / /tasks resume ID — пауза/возобновить\n\n"
-        "📝 Заметки и идеи:\n"
-        "• /notes — просмотр всех заметок\n"
-        "• /notes add Текст #тег — добавить заметку\n"
-        "• /notes view ID — просмотр конкретной записи\n"
-        "• /notes edit ID | новый текст — редактировать\n"
-        "• /notes search запрос — поиск по заметкам\n"
-        "• Обычным сообщением: «Заметка: текст #тег»\n\n"
-        "🗑 Удаление данных:\n"
-        "• /forget запрос — безопасное удаление конкретной записи с подтверждением YES\n\n"
-        "☀️ Организация дня:\n"
-        "• /daily — план на день, дедлайны и что сделать первым\n"
-        "• /focus 25 — таймер продуктивной сессии (1-180 минут)\n"
-        "• /focus stop — остановить фокус-сессию\n\n"
-        "⚙️ Сервисные команды:\n"
-        "• /new — очистить контекст диалога\n"
-        "• /memory — состояние контекста\n"
-        "• /tools — список доступных инструментов\n\n"
-        "Просто напиши мне, и я помогу спланировать цель, сохранить идею или решить задачу!",
+        "🤖 OPENSMART — Your Personal AI Assistant\n\n"
+        "📌 Goal & Task Management:\n"
+        "• /tasks — List active goals and progress\n"
+        "• /tasks add Title | Outcome — Create goal\n"
+        "• /tasks advance ID — Complete current milestone\n"
+        "• /tasks view ID — Details, milestones & history\n"
+        "• /tasks pause ID / /tasks resume ID — Pause/resume\n\n"
+        "📝 Notes & Ideas:\n"
+        "• /notes — View all notes\n"
+        "• /notes add Text #tag — Add a note\n"
+        "• /notes view ID — View specific note\n"
+        "• /notes edit ID | new text — Edit note\n"
+        "• /notes search query — Search notes\n"
+        "• Plain message: \"Note: text #tag\"\n\n"
+        "🗑 Safe Deletion:\n"
+        "• /forget query — Safely remove entry with YES confirmation\n\n"
+        "☀️ Daily Organization:\n"
+        "• /daily — Daily plan, deadlines and first priority\n"
+        "• /focus 25 — Focus timer (1-180 minutes)\n"
+        "• /focus stop — Stop focus timer\n\n"
+        "⚙️ Service Commands:\n"
+        "• /new — Clear conversation context\n"
+        "• /memory — Context state\n"
+        "• /tools — List available tools\n\n"
+        "Simply send me a message anytime to plan a goal, save an idea, or solve a problem!",
     )
 
 
@@ -619,14 +619,14 @@ async def handle_text(message: Message, agent: Agent) -> None:
             removed = 0
             for identifier in pending:
                 removed += await forget_item(identifier, scope=str(message.chat.id))
-            await _safe_answer(message, f"✅ Успешно удалено записей: {removed}.")
+            await _safe_answer(message, f"✅ Successfully removed {removed} item(s).")
         else:
-            await _safe_answer(message, "❌ Удаление отменено. Все записи сохранены.")
+            await _safe_answer(message, "❌ Deletion canceled. All items preserved.")
         return
 
-    # 2. Check direct note creation from regular message
+    # 2. Check direct note creation from regular message (supports English & Russian prefixes)
     note_match = re.match(
-        r"^(?:заметка|запиши|запиши\s+заметку|сохрани\s+заметку|сохрани|note|#заметка)[:\s]+(.*)",
+        r"^(?:note|save\s+note|save|заметка|запиши|сохрани|#note|#заметка)[:\s]+(.*)",
         message.text.strip(),
         re.IGNORECASE | re.DOTALL,
     )
@@ -641,11 +641,11 @@ async def handle_text(message: Message, agent: Agent) -> None:
             date_str = note.get("date") or note.get("created_at", "")[:10]
             await _safe_answer(
                 message,
-                f"📝 Заметка сохранена!\n"
+                f"📝 Note saved!\n"
                 f"ID: {note['id']}\n"
-                f"Текст: {note['text']}{tags_str}\n"
-                f"📅 Дата: {date_str}\n\n"
-                f"Просмотр: /notes view {note['id']} | Удаление: /forget {note['id']}",
+                f"Text: {note['text']}{tags_str}\n"
+                f"📅 Date: {date_str}\n\n"
+                f"View: /notes view {note['id']} | Delete: /forget {note['id']}",
             )
             return
 
@@ -655,10 +655,10 @@ async def handle_text(message: Message, agent: Agent) -> None:
             reply = await agent.generate_reply(message.chat.id, message.text)
     except (OpenAIError, TimeoutError):
         logger.exception("LLM request failed or timed out")
-        reply = "Сервис временно не отвечает. Попробуйте ещё раз чуть позже."
+        reply = "The service is temporarily unavailable. Please try again shortly."
     except Exception:
         logger.exception("Unexpected agent failure for chat %s", message.chat.id)
-        reply = "Не удалось обработать запрос. Попробуйте ещё раз чуть позже."
+        reply = "Failed to process the request. Please try again shortly."
 
     for chunk in format_telegram_messages(reply):
         await _safe_answer(message, chunk, parse_mode="MarkdownV2")
@@ -672,10 +672,10 @@ async def handle_voice(message: Message, bot: Bot) -> None:
     try:
         async with downloaded_telegram_file(bot, voice.file_id, ".ogg") as file_path:
             logger.info("Downloaded voice message to %s", file_path)
-            await _safe_answer(message, "Голосовое сообщение скачано и готово к распознаванию.")
+            await _safe_answer(message, "Voice message downloaded and ready for analysis.")
     except (TelegramAPIError, OSError):
         logger.exception("Failed to download voice message from chat %s", message.chat.id)
-        await _safe_answer(message, "Не удалось скачать голосовое сообщение. Попробуйте позже.")
+        await _safe_answer(message, "Failed to download voice message. Please try again later.")
 
 
 @router.message(F.photo)
@@ -686,7 +686,7 @@ async def handle_photo(message: Message, bot: Bot) -> None:
     try:
         async with downloaded_telegram_file(bot, photo.file_id, ".jpg") as file_path:
             logger.info("Downloaded photo to %s", file_path)
-            await _safe_answer(message, "Фото скачано и готово к анализу.")
+            await _safe_answer(message, "Photo downloaded and ready for analysis.")
     except (TelegramAPIError, OSError):
         logger.exception("Failed to download photo from chat %s", message.chat.id)
-        await _safe_answer(message, "Не удалось скачать фото. Попробуйте позже.")
+        await _safe_answer(message, "Failed to download photo. Please try again later.")

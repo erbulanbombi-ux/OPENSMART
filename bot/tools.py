@@ -731,7 +731,7 @@ async def search_forget_items(query: str, *, scope: str) -> list[dict[str, str]]
                     tag_str = f" (#{', #'.join(tags)})" if tags else ""
                     results.append({
                         "id": f"note:{note.get('id')}",
-                        "kind": "Заметка",
+                        "kind": "Note",
                         "text": f"[{date}] {note_text[:140]}{tag_str}",
                     })
 
@@ -742,7 +742,7 @@ async def search_forget_items(query: str, *, scope: str) -> list[dict[str, str]]
                 if clean_query in key.casefold() or clean_query in value.casefold():
                     results.append({
                         "id": f"memory:{key}",
-                        "kind": "Воспоминание",
+                        "kind": "Memory",
                         "text": f"{key}: {value}"[:160],
                     })
 
@@ -757,8 +757,8 @@ async def search_forget_items(query: str, *, scope: str) -> list[dict[str, str]]
                 if clean_query == gid or clean_query in gtitle.casefold():
                     results.append({
                         "id": f"goal:{goal.get('id')}",
-                        "kind": "Цель",
-                        "text": f"«{gtitle}» (прогресс: {goal.get('progress_percent', 0)}%)",
+                        "kind": "Goal",
+                        "text": f"\"{gtitle}\" (progress: {goal.get('progress_percent', 0)}%)",
                     })
 
             return results[:20]
@@ -928,7 +928,7 @@ async def manage_goal(
                     goal.setdefault("milestones", [])
                     goal.setdefault("current_milestone", None)
                     goal.setdefault("progress_percent", 0)
-                    goal.setdefault("next_recommended_step", "Определить следующий шаг.")
+                    goal.setdefault("next_recommended_step", "Define the next step.")
                     goal.setdefault("priority", 3)
                     goal.setdefault("history", [])
                     for step in goal.get("milestones", []):
@@ -947,26 +947,26 @@ async def manage_goal(
                         return {
                             "clarification_required": True,
                             "question": (
-                                f"Чтобы цель «{title.strip()}» была конкретной и достижимой, давай уточним желаемый результат!\n\n"
-                                "🎯 Какой конкретный измеримый результат ты хочешь получить?"
+                                f"To make the goal \"{title.strip()}\" specific and achievable, let's clarify your desired result!\n\n"
+                                "🎯 What specific, measurable outcome would you like to achieve?"
                             ),
                             "suggested_milestones": [
-                                "1. Определить стартовый уровень и конкретные критерии успеха",
-                                "2. Составить регулярный график и план действий на каждую неделю",
-                                "3. Начать выполнение и выработать привычку практики",
-                                "4. Оценить промежуточный прогресс и скорректировать подход",
-                                "5. Достичь финального результата и зафиксировать итог",
+                                "1. Define baseline level and success criteria",
+                                "2. Create a weekly action plan and schedule",
+                                "3. Start execution and establish a steady habit",
+                                "4. Review milestone progress and adjust approach",
+                                "5. Achieve the target outcome and record results",
                             ],
                         }
                     active_count = sum(goal.get("status") in {"not_started", "in_progress"} for goal in goals)
                     if active_count >= 20:
                         raise ValueError("This chat already has 20 active goals.")
                     step_titles = milestones or [
-                        "Определить стартовую точку и критерии",
-                        "Выполнить первый запланированный шаг",
-                        "Выстроить регулярную привычку",
-                        "Оценить промежуточный прогресс",
-                        "Достичь желаемого результата",
+                        "Define starting point and success criteria",
+                        "Complete the first scheduled action step",
+                        "Establish a regular practice habit",
+                        "Review intermediate progress",
+                        "Achieve target outcome",
                     ]
                     goal_steps = [
                         {"id": uuid.uuid4().hex[:8], "title": step.strip(), "status": "not_started"}
@@ -1009,7 +1009,7 @@ async def manage_goal(
                     if selected is None and not goal_id and not title and len(target_goals) == 1:
                         selected = target_goals[0]
                     if selected is None:
-                        raise ValueError("Укажите ID цели или точное название.")
+                        raise ValueError("Specify goal ID or exact title.")
 
                     if action == "get":
                         return {"goal": selected}
@@ -1030,7 +1030,7 @@ async def manage_goal(
                             None,
                         )
                         if current is None:
-                            raise ValueError("Текущий этап для этой цели не найден.")
+                            raise ValueError("Current milestone not found for this goal.")
                         current["status"] = "completed"
                         current["completed_at"] = now
 
@@ -1055,7 +1055,7 @@ async def manage_goal(
                             selected["status"] = "completed"
                             selected["progress_percent"] = 100
                             selected["current_milestone"] = None
-                            selected["next_recommended_step"] = "Цель полностью достигнута! Поздравляем!"
+                            selected["next_recommended_step"] = "Goal fully achieved! Congratulations!"
                             selected["completed_at"] = now
                         result = {"updated": selected}
                     elif action == "pause":
@@ -1079,7 +1079,7 @@ async def manage_goal(
                                 })
                         selected["history"] = history[-30:]
                         selected["current_milestone"] = None
-                        selected["next_recommended_step"] = "Цель успешно завершена!"
+                        selected["next_recommended_step"] = "Goal completed successfully!"
                         selected["completed_at"] = now
                         result = {"completed": selected}
 
@@ -1170,14 +1170,14 @@ async def get_daily_briefing(scope: str) -> dict[str, Any]:
                 {
                     "due_at": goal.get("deadline"),
                     "priority": int(goal.get("priority", 3)),
-                    "action": f"🎯 Цель «{goal.get('title', 'Цель')}» — {goal.get('next_recommended_step', 'сделай следующий шаг')}",
+                    "action": f"🎯 Goal \"{goal.get('title', 'Goal')}\" — {goal.get('next_recommended_step', 'take next step')}",
                 }
                 for goal in goals
             ] + [
                 {
                     "due_at": item.get("due_at"),
                     "priority": int(item.get("priority", 3)),
-                    "action": f"⏰ Напоминание: {item.get('text', 'Напоминание')}",
+                    "action": f"⏰ Reminder: {item.get('text', 'Reminder')}",
                 }
                 for item in reminders
             ]
