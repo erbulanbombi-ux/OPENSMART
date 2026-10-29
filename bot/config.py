@@ -22,21 +22,24 @@ def load_settings() -> Settings:
 
     bot_token = (os.getenv("BOT_TOKEN") or "").strip()
     llm_base_url = (
-        os.getenv("LLM_BASE_URL") or "https://openrouter.ai/api/v1"
+        os.getenv("LLM_BASE_URL") or "https://api.studio.nebius.ai/v1/"
     ).strip()
     llm_api_key = (
-        os.getenv("OPENROUTER_API_KEY") or os.getenv("LLM_API_KEY") or ""
+        os.getenv("NEBIUS_API_KEY")
+        or os.getenv("OPENROUTER_API_KEY")
+        or os.getenv("LLM_API_KEY")
+        or ""
     ).strip()
-    if not llm_api_key and "localhost" in llm_base_url or (
-        not llm_api_key and "127.0.0.1" in llm_base_url
-    ):
+    if not llm_api_key and ("localhost" in llm_base_url or "127.0.0.1" in llm_base_url):
         llm_api_key = "ollama"
-    llm_model = (os.getenv("LLM_MODEL") or "openai/gpt-4o-mini").strip()
+    llm_model = (
+        os.getenv("LLM_MODEL") or "meta-llama/Meta-Llama-3.1-70B-Instruct"
+    ).strip()
 
     if not bot_token or bot_token.startswith("replace_"):
         raise ValueError("Set a valid BOT_TOKEN in the .env file.")
     if not llm_api_key or llm_api_key.startswith("replace_"):
-        raise ValueError("Set LLM_API_KEY or OPENROUTER_API_KEY in the .env file.")
+        raise ValueError("Set NEBIUS_API_KEY, LLM_API_KEY or OPENROUTER_API_KEY in the .env file.")
 
     checkin_timezone = (os.getenv("CHECKIN_TIMEZONE") or "UTC").strip()
     try:

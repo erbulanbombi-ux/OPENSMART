@@ -6,10 +6,11 @@
 
 <p align="center">
   <strong>The fastest, smartest, and most resource-efficient open-source Telegram AI assistant.</strong><br/>
-  Runs 24/7 on a 512 MB VPS for $2/mo · Long-term Goal Planning · Smart Notes · Daily Briefings · Deep Focus
+  Powered by Nebius AI Studio · Runs 24/7 on a 512 MB VPS for $2/mo · Long-term Goal Planning · Smart Notes · Daily Briefings · Deep Focus
 </p>
 
 <p align="center">
+  <a href="https://nebius.com"><img src="https://img.shields.io/badge/Powered%20by-Nebius%20AI%20Studio-0066FF.svg?style=flat-square&logo=nebius&logoColor=white" alt="Nebius AI Studio" /></a>
   <a href="https://github.com/erbulanbombi-ux/OPENSMART"><img src="https://img.shields.io/badge/status-production--ready-brightgreen?style=flat-square" alt="Status" /></a>
   <a href="https://python.org"><img src="https://img.shields.io/badge/python-3.11+-3776AB.svg?style=flat-square&logo=python&logoColor=white" alt="Python Version" /></a>
   <a href="https://core.telegram.org/bots"><img src="https://img.shields.io/badge/Telegram-aiogram%203.x-2CA5E0?style=flat-square&logo=telegram&logoColor=white" alt="Telegram Bot" /></a>
@@ -32,7 +33,7 @@
 
 > [!NOTE]
 > 🚀 **Built for Hackathons & 24/7 Production Deployment.**
-> OPENSMART is an autonomous personal AI companion designed to solve the real-life productivity bottleneck: breaking down ambitious long-term goals into verifiable milestones, capturing spontaneous ideas without friction, and keeping you accountable daily — all while consuming less than 80 MB RAM.
+> OPENSMART is an autonomous personal AI companion powered by **Nebius AI Studio** (`meta-llama/Meta-Llama-3.1-70B-Instruct`). It solves the real-life productivity bottleneck: breaking down ambitious long-term goals into verifiable milestones, capturing spontaneous ideas without friction, and keeping you accountable daily — all while consuming less than 80 MB RAM.
 
 ---
 
@@ -49,7 +50,7 @@ cd OPENSMART
 
 # 2. Configure your environment
 cp .env.example .env
-nano .env  # Add your BOT_TOKEN and OPENROUTER_API_KEY
+nano .env  # Add your BOT_TOKEN and NEBIUS_API_KEY
 
 # 3. Start the container in background
 docker compose up -d --build
@@ -79,7 +80,7 @@ pip install -r requirements.txt
 
 # 4. Configure .env
 cp .env.example .env
-# Edit BOT_TOKEN and OPENROUTER_API_KEY in .env
+# Edit BOT_TOKEN and NEBIUS_API_KEY in .env
 
 # 5. Launch OPENSMART
 python3 -m bot.main
@@ -109,7 +110,7 @@ The **OPENSMART** avatar and visual language were created to embody the core phi
 <td width="50%" valign="top">
 
 ### ⚡ Ultra-Lightweight & Fast
-Engineered with non-blocking Python `asyncio`, `aiogram 3`, and `httpx`. Consumes **~60 MB RAM at idle** and rarely exceeds 120 MB under heavy load. Operates smoothly on a **512 MB / 0.5 vCPU ($2/month)** server tier.
+Engineered with non-blocking Python `asyncio`, `aiogram 3`, and `httpx`. Backed by **Nebius AI Studio** for low-latency inference. Consumes **~60 MB RAM at idle** and rarely exceeds 120 MB under heavy load. Operates smoothly on a **512 MB / 0.5 vCPU ($2/month)** server tier.
 
 </td>
 <td width="50%" valign="top">
@@ -157,6 +158,7 @@ How OPENSMART compares to conventional chatbots and heavy agent frameworks:
 
 | Feature / Metric | Generic Telegram Bot | Heavy Agent Frameworks | Simple Note Bots | OPENSMART 🚀 |
 |---|---|---|---|---|
+| **AI Infrastructure** | Varies / OpenAI | Expensive GPUs | None | 🚀 **Nebius AI Studio Cloud** |
 | **RAM Footprint (Idle)** | 150–300 MB | 1.2 GB – 4 GB | 90–150 MB | 🚀 **~60 MB RAM** |
 | **Minimum VPS Requirement** | 1–2 GB RAM | 4–8 GB RAM / GPU | 512 MB RAM | 🚀 **512 MB RAM / 0.5 vCPU ($2/mo)** |
 | **Goal Decomposition Engine** | 🚫 None | ⚠️ Raw unstructured text | 🚫 None | 🚀 **Automatic 5-stage milestones & progress bars** |
@@ -266,7 +268,7 @@ flowchart TD
         Router -->|"Direct Triggers"| FastForget["🗑 Guarded Forget Engine"]
         Router -->|"Conversational"| Agent["🤖 Agent Controller"]
         
-        Agent <-->|"Async Chat Completions"| OpenRouter["🌐 OpenRouter / OpenAI API\n(gpt-4o-mini)"]
+        Agent <-->|"Async Chat Completions"| Nebius["🌐 Nebius AI Studio Cloud\n(meta-llama/Meta-Llama-3.1-70B-Instruct)"]
         Agent <-->|"Function Calling"| ToolRegistry["🛠 Tool Registry"]
         
         subgraph Tools ["Built-in Tools"]
@@ -296,9 +298,9 @@ flowchart TD
 | Variable | Required | Default | Description |
 |---|:---:|---|---|
 | `BOT_TOKEN` | **Yes** | — | Telegram Bot API token from [@BotFather](https://t.me/BotFather) |
-| `OPENROUTER_API_KEY` | **Yes** | — | API key from [OpenRouter](https://openrouter.ai/) or OpenAI |
-| `LLM_MODEL` | No | `openai/gpt-4o-mini` | LLM model identifier (supports any OpenAI-compatible model) |
-| `LLM_BASE_URL` | No | `https://openrouter.ai/api/v1` | Base URL for LLM API requests |
+| `NEBIUS_API_KEY` | **Yes** | — | High-performance API key from [Nebius AI Studio](https://nebius.com) |
+| `LLM_MODEL` | No | `meta-llama/Meta-Llama-3.1-70B-Instruct` | State-of-the-art open-weight LLM hosted on Nebius AI Studio |
+| `LLM_BASE_URL` | No | `https://api.studio.nebius.ai/v1/` | Nebius AI Studio OpenAI-compatible endpoint |
 | `CHECKIN_TIMEZONE` | No | `UTC` | IANA timezone (e.g. `Europe/Moscow`, `Asia/Almaty`) |
 | `CHECKIN_HOURS` | No | `9,14,20` | Comma-separated hours for proactive check-ins |
 | `OPENSMART_MEMORY_PATH` | No | `bot/memory.json` | Custom path to memory storage file |
@@ -322,6 +324,6 @@ Contributions, issues, and feature suggestions are welcome!
 This project is licensed under the **MIT License** — see the [LICENSE](./LICENSE) file for details.
 
 <p align="center">
-  <b>Built with ❤️ for focused minds and high achievers.</b><br/>
+  <b>Built with ❤️ for focused minds and high achievers. Powered by Nebius AI Studio.</b><br/>
   <sub>OPENSMART — Unlock your potential.</sub>
 </p>
