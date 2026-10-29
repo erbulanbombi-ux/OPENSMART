@@ -2,7 +2,7 @@ import logging
 import time
 from typing import Any
 
-from openai import AsyncOpenAI
+from openai import AsyncOpenAI, NotFoundError
 
 from bot.config import Settings
 from bot.tools import TOOL_SCHEMAS, execute_tool_call
@@ -44,6 +44,63 @@ class Agent:
         self._focus_until: dict[int, float] = {}
         self._focus_minutes: dict[int, int] = {}
 
+    async def _create_chat_completion(
+        self,
+        messages: list[dict[str, Any]],
+        tools: list[dict[str, Any]] | None = None,
+        tool_choice: str | None = None,
+    ) -> Any:
+        try:
+            return await self._client.chat.completions.create(
+                model=self._model,
+                messages=messages,
+                tools=tools,
+                tool_choice=tool_choice,
+                temperature=0.6,
+                max_tokens=3000,
+            )
+        except NotFoundError as err:
+            logger.warning(
+                "Модель '%s' не найдена (404: %s). Пробуем подобрать рабочую модель...",
+                self._model,
+                err,
+            )
+            base_url = str(self._client.base_url).lower()
+            if "openrouter" in base_url:
+                candidates = [
+                    "openai/gpt-4o-mini",
+                    "meta-llama/llama-3.1-70b-instruct",
+                    "google/gemini-2.0-flash-001",
+                ]
+            elif "nebius" in base_url:
+                candidates = [
+                    "meta-llama/Meta-Llama-3.1-70B-Instruct-fast",
+                    "meta-llama/Meta-Llama-3.1-8B-Instruct-fast",
+                    "meta-llama/Llama-3.3-70B-Instruct",
+                ]
+            else:
+                candidates = ["gpt-4o-mini", "gpt-3.5-turbo"]
+
+            for candidate in candidates:
+                if candidate == self._model:
+                    continue
+                try:
+                    logger.info("Пробуем переключиться на модель: %s", candidate)
+                    resp = await self._client.chat.completions.create(
+                        model=candidate,
+                        messages=messages,
+                        tools=tools,
+                        tool_choice=tool_choice,
+                        temperature=0.6,
+                        max_tokens=3000,
+                    )
+                    self._model = candidate
+                    logger.info("Успешно переключились на рабочую модель: %s", candidate)
+                    return resp
+                except Exception as cand_err:
+                    logger.warning("Модель %s не ответила: %s", candidate, cand_err)
+            raise
+
     async def generate_reply(self, chat_id: int, prompt: str) -> str:
         history = self._trim_history(self._sessions.get(chat_id, []))
         messages: list[dict[str, Any]] = [
@@ -61,13 +118,10 @@ class Agent:
         messages.extend([*history, {"role": "user", "content": prompt}])
 
         for _ in range(MAX_TOOL_ROUNDS):
-            response = await self._client.chat.completions.create(
-                model=self._model,
+            response = await self._create_chat_completion(
                 messages=messages,
                 tools=TOOL_SCHEMAS,
                 tool_choice="auto",
-                temperature=0.6,
-                max_tokens=3000,
             )
             if not response.choices:
                 raise RuntimeError("The model returned no response choices.")
@@ -105,11 +159,8 @@ class Agent:
                 ),
             }
         )
-        response = await self._client.chat.completions.create(
-            model=self._model,
+        response = await self._create_chat_completion(
             messages=messages,
-            temperature=0.6,
-            max_tokens=3000,
         )
         if not response.choices:
             raise RuntimeError("The model returned no response choices after tool use.")

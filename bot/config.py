@@ -32,41 +32,50 @@ def load_settings() -> Settings:
 
     bot_token = (os.getenv("BOT_TOKEN") or "").strip().strip('"').strip("'")
 
-    nebius_key = (os.getenv("NEBIUS_API_KEY") or "").strip().strip('"').strip("'")
     openrouter_key = (os.getenv("OPENROUTER_API_KEY") or "").strip().strip('"').strip("'")
+    openai_key = (os.getenv("OPENAI_API_KEY") or "").strip().strip('"').strip("'")
+    nebius_key = (os.getenv("NEBIUS_API_KEY") or "").strip().strip('"').strip("'")
     generic_key = (os.getenv("LLM_API_KEY") or "").strip().strip('"').strip("'")
     custom_url = (os.getenv("LLM_BASE_URL") or "").strip().strip('"').strip("'")
     custom_model = (os.getenv("LLM_MODEL") or "").strip().strip('"').strip("'")
 
-    # Smart provider resolution:
-    # 1. If OpenRouter key is provided and valid (e.g. starts with sk-or-) and Nebius is not explicitly set or placeholder:
-    if _is_valid_key(openrouter_key) and not _is_valid_key(nebius_key):
+    # Smart provider resolution (OpenRouter is default/recommended for stability and tools):
+    if _is_valid_key(openrouter_key):
         llm_api_key = openrouter_key
         default_base_url = "https://openrouter.ai/api/v1"
         default_model = "openai/gpt-4o-mini"
-    # 2. If Nebius key is provided and valid:
+    elif _is_valid_key(openai_key):
+        llm_api_key = openai_key
+        default_base_url = "https://api.openai.com/v1"
+        default_model = "gpt-4o-mini"
     elif _is_valid_key(nebius_key):
         llm_api_key = nebius_key
         default_base_url = "https://api.studio.nebius.ai/v1/"
-        default_model = "meta-llama/Meta-Llama-3.1-70B-Instruct"
-    # 3. If OpenRouter key is provided:
-    elif _is_valid_key(openrouter_key):
-        llm_api_key = openrouter_key
+        default_model = "meta-llama/Meta-Llama-3.1-70B-Instruct-fast"
+    else:
+        llm_api_key = generic_key or openrouter_key or openai_key or nebius_key
         default_base_url = "https://openrouter.ai/api/v1"
         default_model = "openai/gpt-4o-mini"
-    # 4. Fallback to any generic key:
-    else:
-        llm_api_key = generic_key or nebius_key or openrouter_key
-        default_base_url = "https://api.studio.nebius.ai/v1/"
-        default_model = "meta-llama/Meta-Llama-3.1-70B-Instruct"
 
     llm_base_url = custom_url or default_base_url
     llm_model = custom_model or default_model
 
+    # Model slug normalization to avoid 404s:
+    # 1. OpenRouter model slugs are case-sensitive and lowercase
+    if "openrouter.ai" in llm_base_url.lower():
+        if "meta-llama/meta-llama" in llm_model.lower():
+            llm_model = "openai/gpt-4o-mini"
+        elif llm_model.startswith("meta-llama/Meta-Llama"):
+            llm_model = llm_model.lower()
+    # 2. Nebius serverless uses -fast suffix
+    elif "nebius" in llm_base_url.lower():
+        if llm_model == "meta-llama/Meta-Llama-3.1-70B-Instruct":
+            llm_model = "meta-llama/Meta-Llama-3.1-70B-Instruct-fast"
+
     if not bot_token or not _is_valid_key(bot_token):
         raise ValueError("Укажите корректный BOT_TOKEN в переменных окружения.")
     if not llm_api_key or not _is_valid_key(llm_api_key):
-        raise ValueError("Укажите действующий NEBIUS_API_KEY или OPENROUTER_API_KEY в переменных окружения.")
+        raise ValueError("Укажите действующий OPENROUTER_API_KEY, OPENAI_API_KEY или NEBIUS_API_KEY в переменных окружения.")
 
     checkin_timezone = (os.getenv("CHECKIN_TIMEZONE") or "UTC").strip()
     try:
