@@ -16,30 +16,57 @@ class Settings:
     checkin_hours: tuple[int, ...] = (9, 14, 20)
 
 
+def _is_valid_key(value: str) -> bool:
+    val = value.strip().strip('"').strip("'")
+    if not val:
+        return False
+    low = val.casefold()
+    if low.startswith("replace_") or low.startswith("ваш_") or "your_" in low or len(val) < 8:
+        return False
+    return True
+
+
 def load_settings() -> Settings:
     env_path = Path(__file__).resolve().parents[1] / ".env"
     load_dotenv(dotenv_path=env_path)
 
-    bot_token = (os.getenv("BOT_TOKEN") or "").strip()
-    llm_base_url = (
-        os.getenv("LLM_BASE_URL") or "https://api.studio.nebius.ai/v1/"
-    ).strip()
-    llm_api_key = (
-        os.getenv("NEBIUS_API_KEY")
-        or os.getenv("OPENROUTER_API_KEY")
-        or os.getenv("LLM_API_KEY")
-        or ""
-    ).strip()
-    if not llm_api_key and ("localhost" in llm_base_url or "127.0.0.1" in llm_base_url):
-        llm_api_key = "ollama"
-    llm_model = (
-        os.getenv("LLM_MODEL") or "meta-llama/Meta-Llama-3.1-70B-Instruct"
-    ).strip()
+    bot_token = (os.getenv("BOT_TOKEN") or "").strip().strip('"').strip("'")
 
-    if not bot_token or bot_token.startswith("replace_"):
-        raise ValueError("Set a valid BOT_TOKEN in the .env file.")
-    if not llm_api_key or llm_api_key.startswith("replace_"):
-        raise ValueError("Set NEBIUS_API_KEY, LLM_API_KEY or OPENROUTER_API_KEY in the .env file.")
+    nebius_key = (os.getenv("NEBIUS_API_KEY") or "").strip().strip('"').strip("'")
+    openrouter_key = (os.getenv("OPENROUTER_API_KEY") or "").strip().strip('"').strip("'")
+    generic_key = (os.getenv("LLM_API_KEY") or "").strip().strip('"').strip("'")
+    custom_url = (os.getenv("LLM_BASE_URL") or "").strip().strip('"').strip("'")
+    custom_model = (os.getenv("LLM_MODEL") or "").strip().strip('"').strip("'")
+
+    # Smart provider resolution:
+    # 1. If OpenRouter key is provided and valid (e.g. starts with sk-or-) and Nebius is not explicitly set or placeholder:
+    if _is_valid_key(openrouter_key) and not _is_valid_key(nebius_key):
+        llm_api_key = openrouter_key
+        default_base_url = "https://openrouter.ai/api/v1"
+        default_model = "openai/gpt-4o-mini"
+    # 2. If Nebius key is provided and valid:
+    elif _is_valid_key(nebius_key):
+        llm_api_key = nebius_key
+        default_base_url = "https://api.studio.nebius.ai/v1/"
+        default_model = "meta-llama/Meta-Llama-3.1-70B-Instruct"
+    # 3. If OpenRouter key is provided:
+    elif _is_valid_key(openrouter_key):
+        llm_api_key = openrouter_key
+        default_base_url = "https://openrouter.ai/api/v1"
+        default_model = "openai/gpt-4o-mini"
+    # 4. Fallback to any generic key:
+    else:
+        llm_api_key = generic_key or nebius_key or openrouter_key
+        default_base_url = "https://api.studio.nebius.ai/v1/"
+        default_model = "meta-llama/Meta-Llama-3.1-70B-Instruct"
+
+    llm_base_url = custom_url or default_base_url
+    llm_model = custom_model or default_model
+
+    if not bot_token or not _is_valid_key(bot_token):
+        raise ValueError("Укажите корректный BOT_TOKEN в переменных окружения.")
+    if not llm_api_key or not _is_valid_key(llm_api_key):
+        raise ValueError("Укажите действующий NEBIUS_API_KEY или OPENROUTER_API_KEY в переменных окружения.")
 
     checkin_timezone = (os.getenv("CHECKIN_TIMEZONE") or "UTC").strip()
     try:

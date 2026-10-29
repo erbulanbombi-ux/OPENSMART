@@ -24,8 +24,16 @@ async def main() -> None:
     except ValueError as error:
         logger.error("Invalid bot configuration: %s", error)
         print(f"\n[OPENSMART ОШИБКА КОНФИГУРАЦИИ]: {error}", file=sys.stderr)
-        print("Проверьте файл .env в папке проекта. Пример заполнения см. в .env.example\n", file=sys.stderr)
+        print("Проверьте переменные окружения на сервере или файл .env. См. .env.example\n", file=sys.stderr)
         return
+
+    logger.info(
+        "Loaded settings: LLM Base URL=%s, Model=%s",
+        settings.llm_base_url,
+        settings.llm_model,
+    )
+    print(f"\n[OPENSMART] Подключение к LLM: {settings.llm_base_url}")
+    print(f"[OPENSMART] Модель: {settings.llm_model}\n")
 
     bot = Bot(token=settings.bot_token)
     dispatcher = Dispatcher()
@@ -44,7 +52,7 @@ async def main() -> None:
         try:
             me = await bot.get_me()
             logger.info("Bot connected as @%s (id=%s)", me.username, me.id)
-            print(f"\n>>> OPENSMART успешно запущен как @{me.username} <<<")
+            print(f">>> OPENSMART успешно запущен как @{me.username} <<<")
             print("Бот готов к работе. Нажмите Ctrl+C для остановки.\n")
         except TelegramAPIError:
             logger.exception("Failed to get bot info")
